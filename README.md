@@ -24,10 +24,15 @@ $ npm install elab
 <link rel="stylesheet" href="elab/simple.css" />
 <script src="elab/simple.js"></script>
 
-<!-- 2. Place an element having "elab" class and `tabindex` attribute, and listen "change" event.
-        The "change" event can also be listened to using `addEventListener('change', event => {})`.
-        The `event.detail` is an array having selected values. -->
-<div class="elab" tabindex="0" onchange="console.log(arguments[0].detail)">
+<!-- 2. Place an element having "elab" class and `tabindex` attribute, and listen to "change" or "close" event.
+        Events can also be listened to using `element.addEventListener()`.
+        The `event.detail.values` is an array having selected values. -->
+<div
+  class="elab"
+  tabindex="0"
+  onchange="console.log(arguments[0].detail.values)"
+  onclose="console.log(arguments[0].detail.values)"
+>
 
   <!-- 3. Place options having `data-value` with `data-selected` or `data-disabled` as appropriate. -->
   <ul>

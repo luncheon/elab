@@ -26,7 +26,7 @@ export const elab = (options: ElabOptions) => {
   const nextElementSibling = (element: Element | null | undefined) => element?.nextElementSibling
   const previousElementSibling = (element: Element | null | undefined) => element?.previousElementSibling
 
-  const dispatchChangeEvent = (trigger: Element) => {
+  const collectValues = (trigger: Element) => {
     const values = []
     for (const item of trigger.firstElementChild!.children) {
       const value = item.getAttribute(ATTRIBUTE_VALUE)
@@ -34,8 +34,11 @@ export const elab = (options: ElabOptions) => {
         values.push(value)
       }
     }
-    trigger.dispatchEvent(new CustomEvent('change', { bubbles: true, detail: values }))
+    return values
   }
+
+  const dispatchChangeEvent = (trigger: Element) =>
+    trigger.dispatchEvent(new CustomEvent('change', { bubbles: true, detail: { values: collectValues(trigger) } }))
 
   const resizeDropdown = () => {
     if (activeTrigger && activeDropdown) {
@@ -53,6 +56,14 @@ export const elab = (options: ElabOptions) => {
   }
 
   const closeDropdown = () => {
+    if (
+      activeTrigger &&
+      !activeTrigger.dispatchEvent(
+        new CustomEvent('close', { bubbles: true, cancelable: true, detail: { values: collectValues(activeTrigger) } }),
+      )
+    ) {
+      return
+    }
     activeTrigger?.focus()
     activeDropdown?.remove()
     activeTrigger = activeDropdown = undefined

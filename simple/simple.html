@@ -6,10 +6,15 @@
   <script src="simple.js"></script>
   <header>
     <h1 style="margin: 0;">elab</h1>
-    <p style="margin: 1em 0;">Multiple selection with just markup.</p>
+    <p>Multiple selection with just markup.</p>
   </header>
   <main>
-    <div class="elab" tabindex="0" onchange="console.log(arguments[0].detail)">
+    <div
+      class="elab"
+      tabindex="0"
+      onchange="console.log('change', arguments[0].detail.values)"
+      onclose="console.log('close', arguments[0].detail.values)"
+    >
       <ul>
         <li data-value="cupcake">Cupcake</li>
         <li data-value="donut">Donut</li>
