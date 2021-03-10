@@ -1,0 +1,38 @@
+{
+  "name": "elab",
+  "version": "0.0.1",
+  "description": "Multiple selection with just markup.",
+  "license": "WTFPL",
+  "repository": "luncheon/elab",
+  "keywords": [
+    "select",
+    "multiselect",
+    "vanilla"
+  ],
+  "files": [
+    "core/",
+    "simple/simple.css",
+    "simple/simple.js"
+  ],
+  "prettier": {
+    "printWidth": 140,
+    "endOfLine": "lf",
+    "singleQuote": true,
+    "trailingComma": "all",
+    "semi": false,
+    "arrowParens": "avoid"
+  },
+  "scripts": {
+    "clean": "rm simple/simple.js simple/simple.css",
+    "build": "npm run clean && node build.js && tsc -p . && npm run size",
+    "watch": "npm run clean && node build.js -w",
+    "size": "echo simple.css && gzip-size simple/simple.css && echo simple.js && gzip-size simple/simple.js"
+  },
+  "devDependencies": {
+    "esbuild": "^0.9.0",
+    "esbuild-plugin-sass": "^0.3.3",
+    "gzip-size-cli": "^4.0.0",
+    "prettier": "^2.2.1",
+    "typescript": "^4.2.3"
+  }
+}
