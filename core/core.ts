@@ -13,6 +13,7 @@ export const elab = (options: ElabOptions) => {
   const ATTRIBUTE_VALUE = 'data-value'
   const ATTRIBUTE_SELECTED = 'data-selected'
   const ATTRIBUTE_DISABLED = 'data-disabled'
+  const ATTRIBUTE_SELECTED_ALL = 'data-selected-all'
   const ATTRIBUTE_PLACEHOLDER = 'data-placeholder'
 
   const SELECTOR_TRIGGER = '.elab'
@@ -37,8 +38,21 @@ export const elab = (options: ElabOptions) => {
     return values
   }
 
-  const dispatchChangeEvent = (trigger: Element) =>
-    trigger.dispatchEvent(new CustomEvent('change', { bubbles: true, detail: { values: collectValues(trigger) } }))
+  const isSelectedAll = (trigger: Element) => {
+    let selectedAll = true
+    let unselectedAll = true
+    for (const item of trigger.firstElementChild!.querySelectorAll(`:not([${ATTRIBUTE_SELECTED_ALL}]):not([${ATTRIBUTE_PLACEHOLDER}])`)) {
+      if (!item.hasAttribute(ATTRIBUTE_DISABLED)) {
+        const selected = item.hasAttribute(ATTRIBUTE_SELECTED)
+        selectedAll &&= selected
+        unselectedAll &&= !selected
+        if (!selectedAll && !unselectedAll) {
+          return undefined
+        }
+      }
+    }
+    return selectedAll
+  }
 
   const resizeDropdown = () => {
     if (activeTrigger && activeDropdown) {
@@ -71,21 +85,45 @@ export const elab = (options: ElabOptions) => {
 
   const onPointerOverOnDropdown = (event: PointerEvent) => {
     const option = (event.target as HTMLElement).closest(SELECTOR_OPTION)
-    option && (option.querySelector(SELECTOR_CHECKBOX) as HTMLInputElement | null)?.focus()
+    option && option.querySelector<HTMLInputElement>(SELECTOR_CHECKBOX)?.focus()
   }
   const onChangeOnDropdown = (event: Event) => {
+    const dropdown = event.currentTarget as HTMLElement
     const checkbox = event.target as HTMLInputElement
     if (!activeTrigger || !checkbox.matches(SELECTOR_CHECKBOX)) {
       return
     }
     const option = checkbox.closest(SELECTOR_OPTION)
-    const index = [...(event.currentTarget as HTMLElement).children].indexOf(option!)
+    const index = [...dropdown.children].indexOf(option!)
     const item = activeTrigger.firstElementChild!.children[index]
-    checkbox.checked ? item?.setAttribute(ATTRIBUTE_SELECTED, '') : item?.removeAttribute(ATTRIBUTE_SELECTED)
+    if (!item) {
+      return
+    }
+    if (item.hasAttribute(ATTRIBUTE_SELECTED_ALL)) {
+      for (const item of activeTrigger.firstElementChild!.children) {
+        if (item.hasAttribute(ATTRIBUTE_VALUE) && !item.hasAttribute(ATTRIBUTE_DISABLED)) {
+          checkbox.checked ? item.setAttribute(ATTRIBUTE_SELECTED, '') : item.removeAttribute(ATTRIBUTE_SELECTED)
+        }
+      }
+      for (const _checkbox of dropdown.querySelectorAll<HTMLInputElement>(SELECTOR_CHECKBOX)) {
+        if (_checkbox !== checkbox && !_checkbox.disabled) {
+          _checkbox.checked = checkbox.checked
+        }
+      }
+    } else {
+      checkbox.checked ? item.setAttribute(ATTRIBUTE_SELECTED, '') : item.removeAttribute(ATTRIBUTE_SELECTED)
+      const checkboxAll = dropdown.querySelector<HTMLInputElement>(`[${ATTRIBUTE_SELECTED_ALL}] ${SELECTOR_CHECKBOX}`)
+      if (checkboxAll) {
+        const selectedAll = isSelectedAll(activeTrigger)
+        checkboxAll.indeterminate = selectedAll === undefined
+        checkboxAll.checked = selectedAll !== false
+      }
+    }
     resizeDropdown()
-    dispatchChangeEvent(activeTrigger)
+    activeTrigger.dispatchEvent(new CustomEvent('change', { bubbles: true, detail: { values: collectValues(activeTrigger) } }))
     event.stopPropagation()
   }
+
   const onKeyDownOnDropdown = (event: KeyboardEvent) => {
     const checkbox = event.target as HTMLElement
     if (!checkbox.matches(SELECTOR_CHECKBOX)) {
@@ -96,7 +134,7 @@ export const elab = (options: ElabOptions) => {
       event.preventDefault()
       const next = keyCode === 38 ? previousElementSibling : nextElementSibling
       for (let option = next(checkbox.closest(SELECTOR_OPTION)); option; option = next(option)) {
-        const input = option.querySelector(SELECTOR_CHECKBOX) as HTMLInputElement | null
+        const input = option.querySelector<HTMLInputElement>(SELECTOR_CHECKBOX)
         if (!input?.disabled) {
           input?.focus()
           break
@@ -124,11 +162,17 @@ export const elab = (options: ElabOptions) => {
       for (const attributeName of sourceItem.getAttributeNames()) {
         dropdownItem.setAttribute(attributeName, sourceItem.getAttribute(attributeName)!)
       }
-      const checkbox = dropdownItem.querySelector(SELECTOR_CHECKBOX) as HTMLInputElement | null
+      const checkbox = dropdownItem.querySelector<HTMLInputElement>(SELECTOR_CHECKBOX)
       if (checkbox) {
-        checkbox.value = sourceItem.getAttribute(ATTRIBUTE_VALUE)!
-        checkbox.checked = sourceItem.hasAttribute(ATTRIBUTE_SELECTED)
-        checkbox.disabled = sourceItem.hasAttribute(ATTRIBUTE_DISABLED)
+        if (sourceItem.hasAttribute(ATTRIBUTE_SELECTED_ALL)) {
+          const selectedAll = isSelectedAll(activeTrigger)
+          checkbox.checked = selectedAll !== false
+          checkbox.indeterminate = selectedAll === undefined
+        } else {
+          checkbox.value = sourceItem.getAttribute(ATTRIBUTE_VALUE)!
+          checkbox.checked = sourceItem.hasAttribute(ATTRIBUTE_SELECTED)
+          checkbox.disabled = sourceItem.hasAttribute(ATTRIBUTE_DISABLED)
+        }
       }
       dropdownItem.getElementsByTagName('slot')[0]?.replaceWith(...sourceItem.childNodes)
     }

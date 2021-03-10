@@ -46,3 +46,7 @@
 .elab-checkbox:disabled + .elab-content {
   opacity: 0.5;
 }
+
+.elab-option[data-selected-all] {
+  border-bottom: 1px solid #bbb;
+}

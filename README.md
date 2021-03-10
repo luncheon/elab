@@ -1,6 +1,6 @@
 # elab
 
-Multiple selection with just markup. CSS + JS ≃ 1.7 KB.
+Multiple selection with just markup. CSS + JS ≃ 2 KB.
 
 [Demo](https://codepen.io/luncheon/pen/qBqQMjg)
 
@@ -35,9 +35,11 @@ $ npm install elab
   onchange="console.log(arguments[0].detail.values)"
   onclose="console.log(arguments[0].detail.values)"
 >
-
-  <!-- 3. Place options having `data-value` with `data-selected` or `data-disabled` as appropriate. -->
   <ul>
+    <!-- 3. <Option> Place an item having `data-selected-all` to indicate or toggle all items. -->
+    <li data-selected-all>All</li>
+
+    <!-- 4. Place items having `data-value` with `data-selected` or `data-disabled` as appropriate. -->
     <li data-value="cupcake">Cupcake</li>
     <li data-value="donut">Donut</li>
     <li data-value="eclair" data-selected>Eclair</li>
@@ -46,11 +48,11 @@ $ npm install elab
     <li data-value="honeycomb">Honeycomb</li>
     <li data-value="ice" data-selected>Ice</li>
 
-    <!-- 4. Placing an item having `data-placeholder` at last will display the placeholder when there is no selected item. -->
+    <!-- 5. <Option> Place an item having `data-placeholder` at last to display the placeholder when there is no selected item. -->
     <li data-placeholder>Select...</li>
   </ul>
 
-  <!-- 5. Place an icon to indicate this is a dropdown, such as "▾". -->
+  <!-- 6. <Option> Place an icon to indicate this is a dropdown, such as "▾". -->
   <div style="width: 1em;">▾</div>
 </div>
 ```
