@@ -1,14 +1,18 @@
 export interface ElabOptions {
-  readonly template: string
+  readonly popupItemTemplate: string
 }
 
 export const elab = (options: ElabOptions) => {
-  let activeTrigger: HTMLElement | undefined
-  let activeDropdown: HTMLElement | undefined
+  let activeBar: HTMLElement | undefined
+  let activePopup: HTMLElement | undefined
 
-  const CLASS_DROP = 'elab-drop'
-  const CLASS_DROPUP = 'elab-dropup'
-  const CLASS_DROPDOWN = 'elab-dropdown'
+  const popupItemBase = document.createElement('li')
+  popupItemBase.className = 'elab-popup-item'
+  popupItemBase.innerHTML = options.popupItemTemplate
+
+  const CLASS_POPUP = 'elab-popup'
+  const CLASS_POPUP_DROPUP = 'elab-popup-dropup'
+  const CLASS_POPUP_DROPDOWN = 'elab-popup-dropdown'
 
   const ATTRIBUTE_VALUE = 'data-value'
   const ATTRIBUTE_SELECTED = 'data-selected'
@@ -16,34 +20,30 @@ export const elab = (options: ElabOptions) => {
   const ATTRIBUTE_SELECTED_ALL = 'data-selected-all'
   const ATTRIBUTE_PLACEHOLDER = 'data-placeholder'
 
-  const SELECTOR_TRIGGER = '.elab'
+  const SELECTOR_BAR = '.elab'
   const SELECTOR_CHECKBOX = 'input[type=checkbox]'
-  const SELECTOR_OPTION = 'li.elab-option'
-
-  const optionBase = document.createElement('li')
-  optionBase.className = 'elab-option'
-  optionBase.innerHTML = options.template
+  const SELECTOR_POPUP_ITEM = '.' + popupItemBase.className
 
   const nextElementSibling = (element: Element | null | undefined) => element?.nextElementSibling
   const previousElementSibling = (element: Element | null | undefined) => element?.previousElementSibling
 
-  const collectValues = (trigger: Element) => {
+  const collectValues = (bar: Element) => {
     const values = []
-    for (const item of trigger.firstElementChild!.children) {
-      const value = item.getAttribute(ATTRIBUTE_VALUE)
-      if (value && item.hasAttribute(ATTRIBUTE_SELECTED)) {
+    for (const barItem of bar.firstElementChild!.children) {
+      const value = barItem.getAttribute(ATTRIBUTE_VALUE)
+      if (value && barItem.hasAttribute(ATTRIBUTE_SELECTED)) {
         values.push(value)
       }
     }
     return values
   }
 
-  const isSelectedAll = (trigger: Element) => {
+  const isSelectedAll = (bar: Element) => {
     let selectedAll = true
     let unselectedAll = true
-    for (const item of trigger.firstElementChild!.querySelectorAll(`:not([${ATTRIBUTE_SELECTED_ALL}]):not([${ATTRIBUTE_PLACEHOLDER}])`)) {
-      if (!item.hasAttribute(ATTRIBUTE_DISABLED)) {
-        const selected = item.hasAttribute(ATTRIBUTE_SELECTED)
+    for (const barItem of bar.firstElementChild!.querySelectorAll(`:not([${ATTRIBUTE_SELECTED_ALL}]):not([${ATTRIBUTE_PLACEHOLDER}])`)) {
+      if (!barItem.hasAttribute(ATTRIBUTE_DISABLED)) {
+        const selected = barItem.hasAttribute(ATTRIBUTE_SELECTED)
         selectedAll &&= selected
         unselectedAll &&= !selected
         if (!selectedAll && !unselectedAll) {
@@ -53,74 +53,72 @@ export const elab = (options: ElabOptions) => {
     }
     return selectedAll
   }
-  const setSelectedAll = (checkbox: HTMLInputElement, trigger: Element) => {
-    const selectedAll = isSelectedAll(trigger)
+  const setSelectedAll = (checkbox: HTMLInputElement, bar: Element) => {
+    const selectedAll = isSelectedAll(bar)
     checkbox.checked = selectedAll !== false
     checkbox.indeterminate = selectedAll === undefined
   }
 
-  const resizeDropdown = () => {
-    if (activeTrigger && activeDropdown) {
-      const triggerClientRect = activeTrigger.getBoundingClientRect()
-      activeDropdown.style.left = activeTrigger.offsetLeft + 'px'
-      activeDropdown.style.width = activeTrigger.offsetWidth + 'px'
-      if (activeDropdown.classList.contains(CLASS_DROPUP)) {
-        activeDropdown.style.maxHeight = triggerClientRect.top - 8 + 'px'
-        activeDropdown.style.top = activeTrigger.offsetTop - activeDropdown.offsetHeight + 'px'
+  const resizeActivePopup = () => {
+    if (activeBar && activePopup) {
+      const barClientRect = activeBar.getBoundingClientRect()
+      activePopup.style.left = activeBar.offsetLeft + 'px'
+      activePopup.style.width = activeBar.offsetWidth + 'px'
+      if (activePopup.classList.contains(CLASS_POPUP_DROPUP)) {
+        activePopup.style.maxHeight = barClientRect.top - 8 + 'px'
+        activePopup.style.top = activeBar.offsetTop - activePopup.offsetHeight + 'px'
       } else {
-        activeDropdown.style.maxHeight = window.innerHeight - triggerClientRect.bottom - 20 + 'px'
-        activeDropdown.style.top = activeTrigger.offsetTop + activeTrigger.offsetHeight + 'px'
+        activePopup.style.maxHeight = window.innerHeight - barClientRect.bottom - 20 + 'px'
+        activePopup.style.top = activeBar.offsetTop + activeBar.offsetHeight + 'px'
       }
     }
   }
 
-  const closeDropdown = () => {
+  const closeActivePopup = () => {
     if (
-      activeTrigger &&
-      !activeTrigger.dispatchEvent(
-        new CustomEvent('close', { bubbles: true, cancelable: true, detail: { values: collectValues(activeTrigger) } }),
-      )
+      activeBar &&
+      !activeBar.dispatchEvent(new CustomEvent('close', { bubbles: true, cancelable: true, detail: { values: collectValues(activeBar) } }))
     ) {
       return
     }
-    activeTrigger?.focus()
-    activeDropdown?.remove()
-    activeTrigger = activeDropdown = undefined
+    activeBar?.focus()
+    activePopup?.remove()
+    activeBar = activePopup = undefined
   }
 
-  const onPointerOverOnDropdown = (event: PointerEvent) =>
-    (event.target as HTMLElement).closest(SELECTOR_OPTION)?.querySelector<HTMLInputElement>(SELECTOR_CHECKBOX)?.focus()
-  const onChangeOnDropdown = (event: Event) => {
-    const dropdown = event.currentTarget as HTMLElement
+  const onPointerOverOnPopup = (event: PointerEvent) =>
+    (event.target as HTMLElement).closest(SELECTOR_POPUP_ITEM)?.querySelector<HTMLInputElement>(SELECTOR_CHECKBOX)?.focus()
+  const onChangeOnPopup = (event: Event) => {
+    const popup = event.currentTarget as HTMLElement
     const checkbox = event.target as HTMLInputElement
-    const item =
+    const barItem =
       checkbox.matches(SELECTOR_CHECKBOX) &&
-      activeTrigger?.firstElementChild!.children[[...dropdown.children].indexOf(checkbox.closest(SELECTOR_OPTION)!)]
-    if (!item) {
+      activeBar?.firstElementChild!.children[[...popup.children].indexOf(checkbox.closest(SELECTOR_POPUP_ITEM)!)]
+    if (!barItem) {
       return
     }
-    if (item.hasAttribute(ATTRIBUTE_SELECTED_ALL)) {
-      for (const item of activeTrigger!.firstElementChild!.children) {
-        if (item.hasAttribute(ATTRIBUTE_VALUE) && !item.hasAttribute(ATTRIBUTE_DISABLED)) {
-          item.toggleAttribute(ATTRIBUTE_SELECTED, checkbox.checked)
+    if (barItem.hasAttribute(ATTRIBUTE_SELECTED_ALL)) {
+      for (const barItem of activeBar!.firstElementChild!.children) {
+        if (barItem.hasAttribute(ATTRIBUTE_VALUE) && !barItem.hasAttribute(ATTRIBUTE_DISABLED)) {
+          barItem.toggleAttribute(ATTRIBUTE_SELECTED, checkbox.checked)
         }
       }
-      for (const _checkbox of dropdown.querySelectorAll<HTMLInputElement>(SELECTOR_CHECKBOX)) {
+      for (const _checkbox of popup.querySelectorAll<HTMLInputElement>(SELECTOR_CHECKBOX)) {
         if (_checkbox !== checkbox && !_checkbox.disabled) {
           _checkbox.checked = checkbox.checked
         }
       }
     } else {
-      item.toggleAttribute(ATTRIBUTE_SELECTED, checkbox.checked)
-      const checkboxAll = dropdown.querySelector<HTMLInputElement>(`[${ATTRIBUTE_SELECTED_ALL}] ${SELECTOR_CHECKBOX}`)
-      checkboxAll && setSelectedAll(checkboxAll, activeTrigger!)
+      barItem.toggleAttribute(ATTRIBUTE_SELECTED, checkbox.checked)
+      const checkboxAll = popup.querySelector<HTMLInputElement>(`[${ATTRIBUTE_SELECTED_ALL}] ${SELECTOR_CHECKBOX}`)
+      checkboxAll && setSelectedAll(checkboxAll, activeBar!)
     }
-    resizeDropdown()
-    activeTrigger!.dispatchEvent(new CustomEvent('change', { bubbles: true, detail: { values: collectValues(activeTrigger!) } }))
+    resizeActivePopup()
+    activeBar!.dispatchEvent(new CustomEvent('change', { bubbles: true, detail: { values: collectValues(activeBar!) } }))
     event.stopPropagation()
   }
 
-  const onKeyDownOnDropdown = (event: KeyboardEvent) => {
+  const onKeyDownOnPopup = (event: KeyboardEvent) => {
     const checkbox = event.target as HTMLElement
     if (!checkbox.matches(SELECTOR_CHECKBOX)) {
       return
@@ -129,8 +127,8 @@ export const elab = (options: ElabOptions) => {
     if (keyCode === 38 || keyCode === 40) {
       event.preventDefault()
       const next = keyCode === 38 ? previousElementSibling : nextElementSibling
-      for (let option = next(checkbox.closest(SELECTOR_OPTION)); option; option = next(option)) {
-        const input = option.querySelector<HTMLInputElement>(SELECTOR_CHECKBOX)
+      for (let popupItem = next(checkbox.closest(SELECTOR_POPUP_ITEM)); popupItem; popupItem = next(popupItem)) {
+        const input = popupItem.querySelector<HTMLInputElement>(SELECTOR_CHECKBOX)
         if (!input?.disabled) {
           input?.focus()
           break
@@ -139,77 +137,77 @@ export const elab = (options: ElabOptions) => {
     }
   }
 
-  const openDropdown = (trigger: HTMLElement) => {
-    if (activeTrigger === trigger) {
+  const openPopup = (bar: HTMLElement) => {
+    if (activeBar === bar) {
       return
     }
-    if (activeTrigger) {
-      closeDropdown()
+    if (activeBar) {
+      closeActivePopup()
     }
     const windowHeight = window.innerHeight
-    const { left: triggerLeft, top: triggerTop, bottom: triggerBottom, width: triggerWidth } = trigger.getBoundingClientRect()
-    activeDropdown = trigger.parentElement!.insertBefore(document.createElement('ul'), trigger)
-    activeTrigger = trigger
-    for (const sourceItem of (trigger.firstElementChild!.cloneNode(true) as Element).children) {
-      if (sourceItem.hasAttribute(ATTRIBUTE_PLACEHOLDER)) {
+    const { left: barLeft, top: barTop, bottom: barBottom, width: barWidth } = bar.getBoundingClientRect()
+    activePopup = bar.parentElement!.insertBefore(document.createElement('ul'), bar)
+    activeBar = bar
+    for (const barItem of (bar.firstElementChild!.cloneNode(true) as Element).children) {
+      if (barItem.hasAttribute(ATTRIBUTE_PLACEHOLDER)) {
         continue
       }
-      const dropdownItem = activeDropdown.appendChild(optionBase.cloneNode(true) as typeof optionBase)
-      for (const attributeName of sourceItem.getAttributeNames()) {
-        dropdownItem.setAttribute(attributeName, sourceItem.getAttribute(attributeName)!)
+      const popupItem = activePopup.appendChild(popupItemBase.cloneNode(true) as typeof popupItemBase)
+      for (const attributeName of barItem.getAttributeNames()) {
+        popupItem.setAttribute(attributeName, barItem.getAttribute(attributeName)!)
       }
-      const checkbox = dropdownItem.querySelector<HTMLInputElement>(SELECTOR_CHECKBOX)
+      const checkbox = popupItem.querySelector<HTMLInputElement>(SELECTOR_CHECKBOX)
       if (checkbox) {
-        if (sourceItem.hasAttribute(ATTRIBUTE_SELECTED_ALL)) {
-          setSelectedAll(checkbox, activeTrigger)
+        if (barItem.hasAttribute(ATTRIBUTE_SELECTED_ALL)) {
+          setSelectedAll(checkbox, activeBar)
         } else {
-          checkbox.value = sourceItem.getAttribute(ATTRIBUTE_VALUE)!
-          checkbox.checked = sourceItem.hasAttribute(ATTRIBUTE_SELECTED)
-          checkbox.disabled = sourceItem.hasAttribute(ATTRIBUTE_DISABLED)
+          checkbox.value = barItem.getAttribute(ATTRIBUTE_VALUE)!
+          checkbox.checked = barItem.hasAttribute(ATTRIBUTE_SELECTED)
+          checkbox.disabled = barItem.hasAttribute(ATTRIBUTE_DISABLED)
         }
       }
-      dropdownItem.getElementsByTagName('slot')[0]?.replaceWith(...sourceItem.childNodes)
+      popupItem.getElementsByTagName('slot')[0]?.replaceWith(...barItem.childNodes)
     }
-    activeDropdown.addEventListener('pointerover', onPointerOverOnDropdown)
-    activeDropdown.addEventListener('change', onChangeOnDropdown)
-    activeDropdown.addEventListener('keydown', onKeyDownOnDropdown)
-    activeDropdown.className =
-      CLASS_DROP +
+    activePopup.addEventListener('pointerover', onPointerOverOnPopup)
+    activePopup.addEventListener('change', onChangeOnPopup)
+    activePopup.addEventListener('keydown', onKeyDownOnPopup)
+    activePopup.className =
+      CLASS_POPUP +
       ' ' +
-      (triggerTop * 1.75 > windowHeight && triggerBottom + activeDropdown.offsetHeight > windowHeight ? CLASS_DROPUP : CLASS_DROPDOWN)
-    resizeDropdown()
+      (barTop * 1.75 > windowHeight && barBottom + activePopup.offsetHeight > windowHeight ? CLASS_POPUP_DROPUP : CLASS_POPUP_DROPDOWN)
+    resizeActivePopup()
 
     // without this, on Mac with preference `Show scrollbars: always`, position of the dropdown becomes wrong when the scrollbar is displayed...
-    activeDropdown.style.left = triggerLeft + 'px'
-    activeDropdown.style.width = triggerWidth + 'px'
+    activePopup.style.left = barLeft + 'px'
+    activePopup.style.width = barWidth + 'px'
 
-    setTimeout(() => activeDropdown?.getElementsByTagName('input')[0]?.focus())
+    setTimeout(() => activePopup?.getElementsByTagName('input')[0]?.focus())
   }
 
-  addEventListener('resize', resizeDropdown)
+  addEventListener('resize', resizeActivePopup)
 
   addEventListener('pointerdown', event => {
     const element = event.target as Element
-    const trigger = element.closest<HTMLElement>(SELECTOR_TRIGGER)
-    if (trigger) {
-      trigger === activeTrigger ? closeDropdown() : openDropdown(trigger)
-    } else if (activeDropdown && !activeDropdown.contains(element)) {
-      closeDropdown()
+    const bar = element.closest<HTMLElement>(SELECTOR_BAR)
+    if (bar) {
+      bar === activeBar ? closeActivePopup() : openPopup(bar)
+    } else if (activePopup && !activePopup.contains(element)) {
+      closeActivePopup()
     }
   })
 
   addEventListener('keydown', event => {
     const element = event.target as HTMLElement
     const keyCode = event.keyCode
-    if (keyCode === 32 && element.matches(SELECTOR_TRIGGER)) {
+    if (keyCode === 32 && element.matches(SELECTOR_BAR)) {
       event.preventDefault()
-      element === activeDropdown ? closeDropdown() : openDropdown(element)
-    } else if ((keyCode === 38 || keyCode === 40) && element.matches(SELECTOR_TRIGGER)) {
+      element === activePopup ? closeActivePopup() : openPopup(element)
+    } else if ((keyCode === 38 || keyCode === 40) && element.matches(SELECTOR_BAR)) {
       event.preventDefault()
-      openDropdown(element)
-    } else if (keyCode === 27 && activeDropdown) {
+      openPopup(element)
+    } else if (keyCode === 27 && activePopup) {
       event.preventDefault()
-      closeDropdown()
+      closeActivePopup()
     }
   })
 }

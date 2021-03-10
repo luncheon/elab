@@ -37,7 +37,7 @@
   display: none;
 }
 
-.elab-drop {
+.elab-popup {
   user-select: none;
   list-style-type: none;
   display: block;
@@ -50,6 +50,6 @@
   background-color: white;
 }
 
-.elab-drop > li[data-disabled] {
+.elab-popup > li[data-disabled] {
   pointer-events: none;
 }

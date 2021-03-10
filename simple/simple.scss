@@ -1,7 +1,7 @@
 @import '../core/core';
 
 .elab,
-.elab-drop {
+.elab-popup {
   border: 1px solid #bbb;
   outline: none;
 }
@@ -11,8 +11,8 @@
 }
 
 .elab:focus,
-.elab-drop + .elab,
-.elab-drop {
+.elab-popup + .elab,
+.elab-popup {
   box-shadow: 0 0 2px #bbb, 0 0 4px #bbb;
 }
 
@@ -47,6 +47,6 @@
   opacity: 0.5;
 }
 
-.elab-option[data-selected-all] {
+.elab-popup-item[data-selected-all] {
   border-bottom: 1px solid #bbb;
 }
