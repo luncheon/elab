@@ -53,6 +53,11 @@ export const elab = (options: ElabOptions) => {
     }
     return selectedAll
   }
+  const setSelectedAll = (checkbox: HTMLInputElement, trigger: Element) => {
+    const selectedAll = isSelectedAll(trigger)
+    checkbox.checked = selectedAll !== false
+    checkbox.indeterminate = selectedAll === undefined
+  }
 
   const resizeDropdown = () => {
     if (activeTrigger && activeDropdown) {
@@ -83,26 +88,21 @@ export const elab = (options: ElabOptions) => {
     activeTrigger = activeDropdown = undefined
   }
 
-  const onPointerOverOnDropdown = (event: PointerEvent) => {
-    const option = (event.target as HTMLElement).closest(SELECTOR_OPTION)
-    option && option.querySelector<HTMLInputElement>(SELECTOR_CHECKBOX)?.focus()
-  }
+  const onPointerOverOnDropdown = (event: PointerEvent) =>
+    (event.target as HTMLElement).closest(SELECTOR_OPTION)?.querySelector<HTMLInputElement>(SELECTOR_CHECKBOX)?.focus()
   const onChangeOnDropdown = (event: Event) => {
     const dropdown = event.currentTarget as HTMLElement
     const checkbox = event.target as HTMLInputElement
-    if (!activeTrigger || !checkbox.matches(SELECTOR_CHECKBOX)) {
-      return
-    }
-    const option = checkbox.closest(SELECTOR_OPTION)
-    const index = [...dropdown.children].indexOf(option!)
-    const item = activeTrigger.firstElementChild!.children[index]
+    const item =
+      checkbox.matches(SELECTOR_CHECKBOX) &&
+      activeTrigger?.firstElementChild!.children[[...dropdown.children].indexOf(checkbox.closest(SELECTOR_OPTION)!)]
     if (!item) {
       return
     }
     if (item.hasAttribute(ATTRIBUTE_SELECTED_ALL)) {
-      for (const item of activeTrigger.firstElementChild!.children) {
+      for (const item of activeTrigger!.firstElementChild!.children) {
         if (item.hasAttribute(ATTRIBUTE_VALUE) && !item.hasAttribute(ATTRIBUTE_DISABLED)) {
-          checkbox.checked ? item.setAttribute(ATTRIBUTE_SELECTED, '') : item.removeAttribute(ATTRIBUTE_SELECTED)
+          item.toggleAttribute(ATTRIBUTE_SELECTED, checkbox.checked)
         }
       }
       for (const _checkbox of dropdown.querySelectorAll<HTMLInputElement>(SELECTOR_CHECKBOX)) {
@@ -111,16 +111,12 @@ export const elab = (options: ElabOptions) => {
         }
       }
     } else {
-      checkbox.checked ? item.setAttribute(ATTRIBUTE_SELECTED, '') : item.removeAttribute(ATTRIBUTE_SELECTED)
+      item.toggleAttribute(ATTRIBUTE_SELECTED, checkbox.checked)
       const checkboxAll = dropdown.querySelector<HTMLInputElement>(`[${ATTRIBUTE_SELECTED_ALL}] ${SELECTOR_CHECKBOX}`)
-      if (checkboxAll) {
-        const selectedAll = isSelectedAll(activeTrigger)
-        checkboxAll.indeterminate = selectedAll === undefined
-        checkboxAll.checked = selectedAll !== false
-      }
+      checkboxAll && setSelectedAll(checkboxAll, activeTrigger!)
     }
     resizeDropdown()
-    activeTrigger.dispatchEvent(new CustomEvent('change', { bubbles: true, detail: { values: collectValues(activeTrigger) } }))
+    activeTrigger!.dispatchEvent(new CustomEvent('change', { bubbles: true, detail: { values: collectValues(activeTrigger!) } }))
     event.stopPropagation()
   }
 
@@ -165,9 +161,7 @@ export const elab = (options: ElabOptions) => {
       const checkbox = dropdownItem.querySelector<HTMLInputElement>(SELECTOR_CHECKBOX)
       if (checkbox) {
         if (sourceItem.hasAttribute(ATTRIBUTE_SELECTED_ALL)) {
-          const selectedAll = isSelectedAll(activeTrigger)
-          checkbox.checked = selectedAll !== false
-          checkbox.indeterminate = selectedAll === undefined
+          setSelectedAll(checkbox, activeTrigger)
         } else {
           checkbox.value = sourceItem.getAttribute(ATTRIBUTE_VALUE)!
           checkbox.checked = sourceItem.hasAttribute(ATTRIBUTE_SELECTED)
@@ -196,9 +190,9 @@ export const elab = (options: ElabOptions) => {
 
   addEventListener('pointerdown', event => {
     const element = event.target as Element
-    const trigger = element.closest(SELECTOR_TRIGGER)
+    const trigger = element.closest<HTMLElement>(SELECTOR_TRIGGER)
     if (trigger) {
-      trigger === activeTrigger ? closeDropdown() : openDropdown(trigger as HTMLElement)
+      trigger === activeTrigger ? closeDropdown() : openDropdown(trigger)
     } else if (activeDropdown && !activeDropdown.contains(element)) {
       closeDropdown()
     }
