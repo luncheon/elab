@@ -2,6 +2,8 @@
 
 Multiple selection with just markup. CSS + JS ≃ 1.7 KB.
 
+[Demo](https://codepen.io/luncheon/pen/qBqQMjg)
+
 ## Installation
 
 ### via [npm](https://www.npmjs.com/package/elab) (with a module bundler)
