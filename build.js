@@ -5,6 +5,7 @@ esbuild.build({
   outdir: 'simple',
   bundle: true,
   minify: true,
+  target: 'es2020',
   plugins: [require('esbuild-plugin-sass')()],
   logLevel: 'info',
   watch: process.argv.includes('-w'),
