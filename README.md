@@ -12,6 +12,11 @@ Multiple selection with just markup. CSS + JS ≃ 2 KB.
 $ npm install elab
 ```
 
+```js
+import 'elab/simple/simple.css'
+import 'elab/simple/simple.js'
+```
+
 ### via CDN ([jsDelivr](https://www.jsdelivr.com/package/npm/elab))
 
 ```html
