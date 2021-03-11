@@ -1,6 +1,6 @@
 const esbuild = require('esbuild')
 
-esbuild.build({
+const options = {
   entryPoints: ['simple/simple.ts'],
   outdir: 'simple',
   bundle: true,
@@ -8,5 +8,10 @@ esbuild.build({
   target: 'es2020',
   plugins: [require('esbuild-plugin-sass')()],
   logLevel: 'info',
-  watch: process.argv.includes('-w'),
-})
+}
+
+if (process.argv.includes('--serve')) {
+  esbuild.serve({ servedir: 'simple' }, options).then(console.log('http://localhost:8000'))
+} else {
+  esbuild.build(options)
+}

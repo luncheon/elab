@@ -23,9 +23,9 @@
     "arrowParens": "avoid"
   },
   "scripts": {
-    "clean": "rm simple/simple.js simple/simple.css",
+    "clean": "rm -f simple/simple.js simple/simple.css",
     "build": "npm run clean && node build.js && tsc -p . && npm run size",
-    "watch": "npm run clean && node build.js -w",
+    "start": "npm run clean && node build.js --serve",
     "size": "echo simple.css && gzip-size simple/simple.css && echo simple.js && gzip-size simple/simple.js"
   },
   "devDependencies": {
