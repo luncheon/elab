@@ -3,6 +3,19 @@ export interface ElabOptions {
   readonly popupItemTemplate: string
 }
 
+interface ElabItem {
+  barItem: HTMLElement
+  popupItem: HTMLElement
+  checkbox: HTMLInputElement
+}
+
+interface ElabPopup {
+  readonly bar: HTMLElement
+  readonly popup: HTMLElement
+  readonly items: ElabItem[]
+  readonly itemSelectedAll?: ElabItem
+}
+
 const createTemplatedElementFactory = <T extends Element>(html: string, className: string) => {
   const template = document.createElement('template')
   template.innerHTML = html
@@ -11,14 +24,15 @@ const createTemplatedElementFactory = <T extends Element>(html: string, classNam
   return () => element.cloneNode(true) as T
 }
 
+const collectValues = (items: ElabItem[]) =>
+  items.map(item => item.checkbox.checked && item.barItem.getAttribute('data-value')).filter(Boolean) as string[]
+
 export const elab = (options: ElabOptions) => {
-  let activeBar: HTMLElement | undefined
-  let activePopup: HTMLElement | undefined
+  let activePopup: ElabPopup | undefined
 
   const CLASS_POPUP_DROPUP = 'elab-popup-dropup'
   const CLASS_POPUP_DROPDOWN = 'elab-popup-dropdown'
 
-  const ATTRIBUTE_VALUE = 'data-value'
   const ATTRIBUTE_SELECTED = 'data-selected'
   const ATTRIBUTE_DISABLED = 'data-disabled'
   const ATTRIBUTE_SELECTED_ALL = 'data-selected-all'
@@ -28,167 +42,165 @@ export const elab = (options: ElabOptions) => {
   const SELECTOR_CHECKBOX = 'input[type=checkbox]'
   const SELECTOR_POPUP_ITEM = '.elab-popup-item'
 
-  const createPopup = createTemplatedElementFactory<HTMLElement>(options.popupTemplate, 'elab-popup')
-  const createPopupItem = createTemplatedElementFactory<HTMLElement>(options.popupItemTemplate, 'elab-popup-item')
+  const createPopupElement = createTemplatedElementFactory<HTMLElement>(options.popupTemplate, 'elab-popup')
+  const createPopupItemElement = createTemplatedElementFactory<HTMLElement>(options.popupItemTemplate, 'elab-popup-item')
 
-  const nextElementSibling = (element: Element | null | undefined) => element?.nextElementSibling
-  const previousElementSibling = (element: Element | null | undefined) => element?.previousElementSibling
-
-  const collectValues = (bar: Element) => {
-    const values = []
-    for (const barItem of bar.firstElementChild!.children) {
-      const value = barItem.getAttribute(ATTRIBUTE_VALUE)
-      if (value && barItem.hasAttribute(ATTRIBUTE_SELECTED)) {
-        values.push(value)
-      }
+  const setCheckState = (item: ElabItem, checked: boolean) => {
+    if (!item.checkbox.disabled) {
+      item.checkbox.checked = checked
+      item.barItem.toggleAttribute(ATTRIBUTE_SELECTED, checked)
+      item.popupItem.toggleAttribute(ATTRIBUTE_SELECTED, checked)
     }
-    return values
+  }
+  const updateSelectedAllCheckState = (itemSelectedAll: ElabItem | undefined, items: readonly ElabItem[]) => {
+    if (itemSelectedAll) {
+      const checked = (item: ElabItem) => item.checkbox.checked
+      const uncheckedAll = !items.some(checked)
+      itemSelectedAll.checkbox.checked = !uncheckedAll
+      itemSelectedAll.checkbox.indeterminate = !uncheckedAll && !items.every(checked)
+    }
   }
 
-  const setSelectedAll = (checkbox: HTMLInputElement, bar: Element) => {
-    const selectedCount = bar.querySelectorAll(`[${ATTRIBUTE_SELECTED}]`).length
-    checkbox.checked = selectedCount !== 0
-    checkbox.indeterminate = selectedCount !== bar.querySelectorAll(`[${ATTRIBUTE_VALUE}]:not([${ATTRIBUTE_DISABLED}])`).length
-  }
-
-  const resizeActivePopup = () => {
-    if (activeBar && activePopup) {
-      const barClientRect = activeBar.getBoundingClientRect()
-      activePopup.style.left = activeBar.offsetLeft + 'px'
-      activePopup.style.width = activeBar.offsetWidth + 'px'
-      if (activePopup.classList.contains(CLASS_POPUP_DROPUP)) {
-        activePopup.style.maxHeight = barClientRect.top - 8 + 'px'
-        activePopup.style.top = activeBar.offsetTop - activePopup.offsetHeight + 'px'
-      } else {
-        activePopup.style.maxHeight = window.innerHeight - barClientRect.bottom - 20 + 'px'
-        activePopup.style.top = activeBar.offsetTop + activeBar.offsetHeight + 'px'
-      }
+  const layoutPopup = (popup: HTMLElement, bar: HTMLElement) => {
+    const barClientRect = bar.getBoundingClientRect()
+    popup.style.left = bar.offsetLeft + 'px'
+    popup.style.width = bar.offsetWidth + 'px'
+    if (popup.classList.contains(CLASS_POPUP_DROPUP)) {
+      popup.style.maxHeight = barClientRect.top - 8 + 'px'
+      popup.style.top = bar.offsetTop - popup.offsetHeight + 'px'
+    } else {
+      popup.style.maxHeight = window.innerHeight - barClientRect.bottom - 20 + 'px'
+      popup.style.top = bar.offsetTop + bar.offsetHeight + 'px'
     }
   }
 
   const closeActivePopup = () => {
     if (
-      activeBar &&
-      !activeBar.dispatchEvent(new CustomEvent('close', { bubbles: true, cancelable: true, detail: { values: collectValues(activeBar) } }))
+      activePopup?.bar.dispatchEvent(
+        new CustomEvent('close', { bubbles: true, cancelable: true, detail: { values: collectValues(activePopup.items) } }),
+      )
     ) {
-      return
-    }
-    activeBar?.focus()
-    activePopup?.remove()
-    activeBar = activePopup = undefined
-  }
-
-  const onPointerOverOnPopup = (event: PointerEvent) =>
-    (event.target as HTMLElement).closest(SELECTOR_POPUP_ITEM)?.querySelector<HTMLInputElement>(SELECTOR_CHECKBOX)?.focus()
-  const onChangeOnPopup = (event: Event) => {
-    const popup = event.currentTarget as HTMLElement
-    const checkbox = event.target as HTMLInputElement
-    const barItem =
-      checkbox.matches(SELECTOR_CHECKBOX) &&
-      activeBar?.firstElementChild!.children[[...popup.children].indexOf(checkbox.closest(SELECTOR_POPUP_ITEM)!)]
-    if (!barItem) {
-      return
-    }
-    if (barItem.hasAttribute(ATTRIBUTE_SELECTED_ALL)) {
-      for (const barItem of activeBar!.firstElementChild!.children) {
-        if (barItem.hasAttribute(ATTRIBUTE_VALUE) && !barItem.hasAttribute(ATTRIBUTE_DISABLED)) {
-          barItem.toggleAttribute(ATTRIBUTE_SELECTED, checkbox.checked)
-        }
-      }
-      for (const _checkbox of popup.querySelectorAll<HTMLInputElement>(SELECTOR_CHECKBOX)) {
-        if (_checkbox !== checkbox && !_checkbox.disabled) {
-          _checkbox.checked = checkbox.checked
-        }
-      }
-    } else {
-      barItem.toggleAttribute(ATTRIBUTE_SELECTED, checkbox.checked)
-      const checkboxAll = popup.querySelector<HTMLInputElement>(`[${ATTRIBUTE_SELECTED_ALL}] ${SELECTOR_CHECKBOX}`)
-      checkboxAll && setSelectedAll(checkboxAll, activeBar!)
-    }
-    resizeActivePopup()
-    activeBar!.dispatchEvent(new CustomEvent('change', { bubbles: true, detail: { values: collectValues(activeBar!) } }))
-    event.stopPropagation()
-  }
-
-  const onKeyDownOnPopup = (event: KeyboardEvent) => {
-    const checkbox = event.target as HTMLElement
-    if (!checkbox.matches(SELECTOR_CHECKBOX)) {
-      return
-    }
-    const keyCode = event.keyCode
-    if (keyCode === 38 || keyCode === 40) {
-      event.preventDefault()
-      const next = keyCode === 38 ? previousElementSibling : nextElementSibling
-      for (let popupItem = next(checkbox.closest(SELECTOR_POPUP_ITEM)); popupItem; popupItem = next(popupItem)) {
-        const input = popupItem.querySelector<HTMLInputElement>(SELECTOR_CHECKBOX)
-        if (!input?.disabled) {
-          input?.focus()
-          break
-        }
-      }
+      activePopup.bar.focus()
+      activePopup.popup.remove()
+      activePopup = undefined
     }
   }
 
-  const openPopup = (bar: HTMLElement) => {
-    if (activeBar === bar) {
-      return
-    }
-    if (activeBar) {
-      closeActivePopup()
-    }
-    const barRect = bar.getBoundingClientRect()
-    const popup = createPopup()
-    const popupItemsSlot = popup.querySelector('slot')!
-    const popupItemsContainer = popupItemsSlot.parentElement!
-    popupItemsSlot.remove()
-    for (const barItem of (bar.firstElementChild!.cloneNode(true) as Element).children) {
+  const createPopupItems = (bar: HTMLElement, appendTo: Element) => {
+    const items: ElabItem[] = []
+    let itemSelectedAll: ElabItem | undefined
+    for (const barItem of bar.firstElementChild!.children as Iterable<HTMLElement>) {
       if (barItem.hasAttribute(ATTRIBUTE_PLACEHOLDER)) {
         continue
       }
-      const popupItem = popupItemsContainer.appendChild(createPopupItem())
+      const popupItem = appendTo.appendChild(createPopupItemElement())
       for (const attributeName of barItem.getAttributeNames()) {
         popupItem.setAttribute(attributeName, barItem.getAttribute(attributeName)!)
       }
+      popupItem.querySelector('slot')!.replaceWith(...barItem.cloneNode(true).childNodes)
+
       const checkbox = popupItem.querySelector<HTMLInputElement>(SELECTOR_CHECKBOX)
       if (checkbox) {
         if (barItem.hasAttribute(ATTRIBUTE_SELECTED_ALL)) {
-          setSelectedAll(checkbox, bar)
+          itemSelectedAll = { barItem, popupItem, checkbox }
         } else {
-          checkbox.value = barItem.getAttribute(ATTRIBUTE_VALUE)!
           checkbox.checked = barItem.hasAttribute(ATTRIBUTE_SELECTED)
           checkbox.disabled = barItem.hasAttribute(ATTRIBUTE_DISABLED)
+          items.push({ barItem, popupItem, checkbox })
         }
       }
-      popupItem.getElementsByTagName('slot')[0]?.replaceWith(...barItem.childNodes)
     }
-    popup.addEventListener('pointerover', onPointerOverOnPopup)
-    popup.addEventListener('change', onChangeOnPopup)
-    popup.addEventListener('keydown', onKeyDownOnPopup)
+    updateSelectedAllCheckState(itemSelectedAll, items)
+    return [items, itemSelectedAll] as const
+  }
 
-    activePopup = bar.parentElement!.insertBefore(popup, bar)
-    activeBar = bar
-    activePopup.classList.add(
-      barRect.top * 1.75 > window.innerHeight && barRect.bottom + activePopup.offsetHeight > window.innerHeight
+  const openPopup = (bar: HTMLElement) => {
+    if (activePopup?.bar === bar) {
+      return
+    }
+    if (activePopup) {
+      closeActivePopup()
+    }
+    const barRect = bar.getBoundingClientRect()
+    const popup = createPopupElement()
+    const slot = popup.querySelector('slot')!
+    const [items, itemSelectedAll] = createPopupItems(bar, slot.parentElement!)
+    slot.remove()
+    activePopup = { bar, popup, items, itemSelectedAll }
+
+    bar.parentElement!.insertBefore(popup, bar)
+    popup.classList.add(
+      barRect.top * 1.75 > window.innerHeight && barRect.bottom + popup.offsetHeight > window.innerHeight
         ? CLASS_POPUP_DROPUP
         : CLASS_POPUP_DROPDOWN,
     )
-    resizeActivePopup()
+    layoutPopup(popup, bar)
 
     // without this, on Mac with preference `Show scrollbars: always`, position of the dropdown becomes wrong when the scrollbar is displayed...
-    activePopup.style.left = barRect.left + 'px'
-    activePopup.style.width = barRect.width + 'px'
+    popup.style.left = barRect.left + 'px'
+    popup.style.width = barRect.width + 'px'
 
-    setTimeout(() => activePopup?.getElementsByTagName('input')[0]?.focus())
+    const setSelected = (checkbox: HTMLElement, checked: boolean) => {
+      if (checkbox === itemSelectedAll?.checkbox) {
+        for (const item of items) {
+          setCheckState(item, checked)
+        }
+        itemSelectedAll.checkbox.checked = checked
+        itemSelectedAll.checkbox.indeterminate = false
+      } else {
+        const item = items.find(item => item.checkbox === checkbox)
+        if (!item) {
+          return
+        }
+        setCheckState(item, checked)
+        updateSelectedAllCheckState(itemSelectedAll, items)
+      }
+      layoutPopup(popup, bar)
+      bar.dispatchEvent(new CustomEvent('change', { bubbles: true, detail: { values: collectValues(items) } }))
+    }
+
+    popup.addEventListener('pointerover', event =>
+      (event.target as HTMLElement).closest(SELECTOR_POPUP_ITEM)?.querySelector<HTMLInputElement>(SELECTOR_CHECKBOX)?.focus(),
+    )
+    popup.addEventListener('change', event => {
+      const checkbox = event.target as HTMLInputElement
+      if (checkbox.matches(SELECTOR_CHECKBOX)) {
+        setSelected(checkbox, checkbox.checked)
+        event.stopPropagation()
+      }
+    })
+    popup.addEventListener('keydown', event => {
+      const checkbox = event.target as HTMLInputElement
+      if (!checkbox.matches(SELECTOR_CHECKBOX)) {
+        return
+      }
+      const keyCode = event.keyCode
+      if (keyCode === 38 || keyCode === 40) {
+        event.preventDefault()
+        const next = keyCode === 38 ? ('previousElementSibling' as const) : ('nextElementSibling' as const)
+        for (let popupItem = checkbox.closest(SELECTOR_POPUP_ITEM)?.[next]; popupItem; popupItem = popupItem[next]) {
+          const input = popupItem.querySelector<HTMLInputElement>(SELECTOR_CHECKBOX)
+          if (!input?.disabled) {
+            input?.focus()
+            break
+          }
+        }
+      } else if (keyCode === 13) {
+        event.preventDefault()
+        setSelected(checkbox, !checkbox.checked)
+      }
+    })
+    setTimeout(() => popup.getElementsByTagName('input')[0]?.focus())
   }
 
-  addEventListener('resize', resizeActivePopup)
+  addEventListener('resize', () => activePopup && layoutPopup(activePopup.popup, activePopup.bar))
 
   addEventListener('pointerdown', event => {
     const element = event.target as Element
     const bar = element.closest<HTMLElement>(SELECTOR_BAR)
     if (bar) {
-      bar === activeBar ? closeActivePopup() : openPopup(bar)
-    } else if (activePopup && !activePopup.contains(element)) {
+      bar === activePopup?.bar ? closeActivePopup() : openPopup(bar)
+    } else if (activePopup && !activePopup.popup.contains(element)) {
       closeActivePopup()
     }
   })
@@ -196,15 +208,15 @@ export const elab = (options: ElabOptions) => {
   addEventListener('keydown', event => {
     const element = event.target as HTMLElement
     const keyCode = event.keyCode
-    if (keyCode === 32 && element.matches(SELECTOR_BAR)) {
+    if (keyCode === 27 && activePopup) {
       event.preventDefault()
-      element === activePopup ? closeActivePopup() : openPopup(element)
+      closeActivePopup()
+    } else if (keyCode === 32 && element.matches(SELECTOR_BAR)) {
+      event.preventDefault()
+      element === activePopup?.popup ? closeActivePopup() : openPopup(element)
     } else if ((keyCode === 38 || keyCode === 40) && element.matches(SELECTOR_BAR)) {
       event.preventDefault()
       openPopup(element)
-    } else if (keyCode === 27 && activePopup) {
-      event.preventDefault()
-      closeActivePopup()
     }
   })
 }
