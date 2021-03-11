@@ -1,6 +1,6 @@
 # elab
 
-Multiple selection with just markup. CSS + JS ≃ 2 KB.
+Multiple selection with just markup. CSS + JS ≃ 2 KB (minzipped).
 
 [Demo](https://codepen.io/luncheon/pen/qBqQMjg)
 
@@ -20,8 +20,8 @@ import 'elab/simple/simple.js'
 ### via CDN ([jsDelivr](https://www.jsdelivr.com/package/npm/elab))
 
 ```html
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/elab@0.0.4/simple/simple.css" />
-<script src="https://cdn.jsdelivr.net/npm/elab@0.0.4/simple/simple.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/elab@0.0.5/simple/simple.css" />
+<script src="https://cdn.jsdelivr.net/npm/elab@0.0.5/simple/simple.js"></script>
 ```
 
 ## Usage
