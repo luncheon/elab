@@ -1,6 +1,6 @@
 {
   "name": "elab",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "description": "Multiple selection with just markup.",
   "license": "WTFPL",
   "repository": "luncheon/elab",
@@ -12,7 +12,9 @@
   "files": [
     "core/",
     "simple/simple.css",
-    "simple/simple.js"
+    "simple/simple.js",
+    "material/material.css",
+    "material/material.js"
   ],
   "prettier": {
     "printWidth": 140,
