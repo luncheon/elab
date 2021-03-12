@@ -1,8 +1,8 @@
 const esbuild = require('esbuild')
 
 const options = {
-  entryPoints: ['simple/simple.ts'],
-  outdir: 'simple',
+  entryPoints: ['simple/simple.ts', 'material/material.ts'],
+  outdir: '.',
   bundle: true,
   minify: true,
   target: 'es2020',
@@ -11,7 +11,7 @@ const options = {
 }
 
 if (process.argv.includes('--serve')) {
-  esbuild.serve({ servedir: 'simple' }, options).then(console.log('http://localhost:8000'))
+  esbuild.serve({ servedir: '.' }, options).then(console.log('http://localhost:8000'))
 } else {
   esbuild.build(options)
 }

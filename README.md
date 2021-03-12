@@ -1,6 +1,6 @@
 # elab
 
-Multiple selection with just markup. CSS + JS ≃ 2 KB (minzipped).
+Multiple selection with just markup.
 
 [Demo](https://codepen.io/luncheon/pen/qBqQMjg)
 
@@ -13,15 +13,19 @@ $ npm install elab
 ```
 
 ```js
-import 'elab/simple/simple.css'
-import 'elab/simple/simple.js'
+import 'elab/simple/simple.css' // or 'elab/material/material.css'
+import 'elab/simple/simple.js'  // or 'elab/material/material.js'
 ```
 
 ### via CDN ([jsDelivr](https://www.jsdelivr.com/package/npm/elab))
 
 ```html
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/elab@0.0.5/simple/simple.css" />
-<script src="https://cdn.jsdelivr.net/npm/elab@0.0.5/simple/simple.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/elab@0.1.0/simple/simple.css" />
+<script src="https://cdn.jsdelivr.net/npm/elab@0.1.0/simple/simple.js"></script>```
+<!-- or
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/elab@0.1.0/material/material.css" />
+<script src="https://cdn.jsdelivr.net/npm/elab@0.1.0/material/material.js"></script>
+-->
 ```
 
 ## Usage
@@ -31,9 +35,9 @@ import 'elab/simple/simple.js'
 <link rel="stylesheet" href="elab/simple.css" />
 <script src="elab/simple.js"></script>
 
-<!-- 2. Place an element having "elab" class and `tabindex` attribute, and listen to "change" or "close" event.
-        Events can also be listened to using `element.addEventListener()`.
-        The `event.detail.values` is an array having selected values. -->
+<!-- 2. Place an element having "elab" class and `tabindex` attribute.
+        <Option> Listen to "change" and "close" events using `addEventListener()` or `on-` attributes.
+        `event.detail.values` is an array having selected values. -->
 <div
   class="elab"
   tabindex="0"
@@ -53,12 +57,12 @@ import 'elab/simple/simple.js'
     <li data-value="honeycomb">Honeycomb</li>
     <li data-value="ice" data-selected>Ice</li>
 
-    <!-- 5. <Option> Place an item having `data-placeholder` at last to display the placeholder when there is no selected item. -->
+    <!-- 5. <Option> Place an item having `data-placeholder` at last to display the placeholder. -->
     <li data-placeholder>Select...</li>
   </ul>
 
   <!-- 6. <Option> Place an icon to indicate this is a dropdown, such as "▾". -->
-  <div style="width: 1em;">▾</div>
+  <div style="padding: 0 0.5em;">▾</div>
 </div>
 ```
 

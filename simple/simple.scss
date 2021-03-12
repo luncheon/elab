@@ -1,13 +1,13 @@
 @import '../core/core';
 
+.elab {
+  outline: none;
+  padding: 4px 8px;
+}
+
 .elab,
 .elab-popup {
   border: 1px solid #bbb;
-  outline: none;
-}
-
-.elab {
-  padding: 4px 8px;
 }
 
 .elab:focus,
