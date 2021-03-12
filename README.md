@@ -20,13 +20,21 @@ import 'elab/simple/simple.js'  // or 'elab/material/material.js'
 ### via CDN ([jsDelivr](https://www.jsdelivr.com/package/npm/elab))
 
 ```html
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/elab@0.1.2/simple/simple.css" />
-<script src="https://cdn.jsdelivr.net/npm/elab@0.1.2/simple/simple.js"></script>```
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/elab@0.1.3/simple/simple.css" />
+<script src="https://cdn.jsdelivr.net/npm/elab@0.1.3/simple/simple.js"></script>```
 <!-- or
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/elab@0.1.2/material/material.css" />
-<script src="https://cdn.jsdelivr.net/npm/elab@0.1.2/material/material.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/elab@0.1.3/material/material.css" />
+<script src="https://cdn.jsdelivr.net/npm/elab@0.1.3/material/material.js"></script>
 -->
 ```
+
+### Download
+
+[simple.css](https://cdn.jsdelivr.net/npm/elab@0.1.3/simple/simple.css)
+[simple.js](https://cdn.jsdelivr.net/npm/elab@0.1.3/simple/simple.js)
+
+[material.css](https://cdn.jsdelivr.net/npm/elab@0.1.3/material/material.css)
+[material.js](https://cdn.jsdelivr.net/npm/elab@0.1.3/material/material.js)
 
 ## Usage
 
