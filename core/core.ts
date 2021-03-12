@@ -199,8 +199,13 @@ export const elab = (options: ElabOptions) => {
     const bar = element.closest<HTMLElement>(SELECTOR_BAR)
     if (bar) {
       bar === activePopup?.bar ? closeActivePopup() : openPopup(bar)
-    } else if (activePopup && !activePopup.popup.contains(element)) {
-      closeActivePopup()
+    } else if (activePopup) {
+      if (activePopup.popup.contains(element)) {
+        // prevent labels from becoming active
+        event.preventDefault()
+      } else {
+        closeActivePopup()
+      }
     }
   })
 
