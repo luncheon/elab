@@ -54,10 +54,9 @@ export const elab = (options: ElabOptions) => {
   }
   const updateSelectedAllCheckState = (itemSelectedAll: ElabItem | undefined, items: readonly ElabItem[]) => {
     if (itemSelectedAll) {
-      const checked = (item: ElabItem) => item.checkbox.checked
-      const uncheckedAll = !items.some(checked)
+      const uncheckedAll = items.every(({ checkbox }) => checkbox.disabled || !checkbox.checked)
       itemSelectedAll.checkbox.checked = !uncheckedAll
-      itemSelectedAll.checkbox.indeterminate = !uncheckedAll && !items.every(checked)
+      itemSelectedAll.checkbox.indeterminate = !uncheckedAll && !items.every(({ checkbox }) => checkbox.disabled || checkbox.checked)
     }
   }
 
