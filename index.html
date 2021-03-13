@@ -2,6 +2,7 @@
 <html>
 <head>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>.elab { display: none } /* this is necessary because the rendering starts before the CSS is loaded and flickers. */</style>
   <script>{
     const theme = location.search.slice(1) === 'material' ? 'material' : 'simple'
@@ -12,7 +13,7 @@
     script.src = theme + '/' + theme + '.js'
   }</script>
 </head>
-<body style="width: 800px; margin: 32px auto;">
+<body style="width: 800px; max-width: 90vw; margin: 32px auto;">
   <header>
     <h1 style="margin: 0;">elab</h1>
     <p>
