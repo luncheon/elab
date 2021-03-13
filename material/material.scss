@@ -1,5 +1,11 @@
 @import '../core/core';
 
+.elab,
+[data-ripplet] {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
 .elab {
   outline: none;
   border-bottom: 1px solid #bbb;
