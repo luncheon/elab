@@ -2,7 +2,7 @@
 
 Multiple selection with just markup.
 
-[Demo](https://luncheon.github.io/elab/index.html)
+[Demo](https://luncheon.github.io/elab/index.html) / [CodePen](https://codepen.io/luncheon/pen/qBqQMjg)
 
 ## Installation
 
