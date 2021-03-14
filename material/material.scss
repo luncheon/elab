@@ -103,15 +103,15 @@
   fill: none;
 }
 
-.elab-checkbox:not(:disabled):not(:checked) + .elab-checkbox-icon > .elab-checkbox-icon-unchecked,
-.elab-checkbox:disabled + .elab-checkbox-icon > .elab-checkbox-icon-disabled,
-.elab-checkbox:checked:not(:indeterminate) + .elab-checkbox-icon > .elab-checkbox-icon-checked,
-.elab-checkbox:indeterminate + .elab-checkbox-icon > .elab-checkbox-icon-indeterminate {
+.elab-checkbox:not(:disabled):not(:checked) ~ .elab-checkbox-icon > .elab-checkbox-icon-unchecked,
+.elab-checkbox:disabled ~ .elab-checkbox-icon > .elab-checkbox-icon-disabled,
+.elab-checkbox:checked:not(:indeterminate) ~ .elab-checkbox-icon > .elab-checkbox-icon-checked,
+.elab-checkbox:indeterminate ~ .elab-checkbox-icon > .elab-checkbox-icon-indeterminate {
   fill: currentColor;
 }
 
-.elab-checkbox:disabled + .elab-checkbox-icon,
-.elab-checkbox:disabled + .elab-checkbox-icon + .elab-content {
+.elab-checkbox:disabled ~ .elab-checkbox-icon,
+.elab-checkbox:disabled ~ .elab-content {
   opacity: 0.5;
 }
 
