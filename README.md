@@ -21,7 +21,7 @@ import 'elab/simple/simple.js'  // or 'elab/material/material.js'
 
 ```html
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/elab@0.1.6/simple/simple.css" />
-<script src="https://cdn.jsdelivr.net/npm/elab@0.1.6/simple/simple.js"></script>```
+<script src="https://cdn.jsdelivr.net/npm/elab@0.1.6/simple/simple.js"></script>
 <!-- or
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/elab@0.1.6/material/material.css" />
 <script src="https://cdn.jsdelivr.net/npm/elab@0.1.6/material/material.js"></script>
