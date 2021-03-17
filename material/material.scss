@@ -16,7 +16,7 @@
 
 .elab:hover,
 .elab:focus,
-.elab-popup + .elab {
+.elab-open {
   box-shadow: 0 -2px 1px -1px inset var(--elab-color);
   border-color: var(--elab-color);
 }
@@ -51,7 +51,7 @@
   align-items: flex-end;
   transition: transform 0.2s;
 }
-.elab-popup + .elab > ul > li[data-placeholder],
+.elab-open > ul > li[data-placeholder],
 .elab > ul > li[data-selected] ~ li[data-placeholder] {
   transform-origin: 0 0;
   transform: translateY(-100%) scale(0.75);

@@ -1,5 +1,4 @@
 import { mdiCheckboxBlankOffOutline, mdiCheckboxBlankOutline, mdiCheckboxMarked, mdiMinusBox } from '@mdi/js'
-import ripplet from 'ripplet.js/es/ripplet-declarative'
 import { elab } from '../core/core'
 import './material.scss'
 
@@ -16,20 +15,5 @@ elab({
 </svg>
 <div class=elab-content><slot></slot></div>
 </label></li>`,
-})
-
-const clearRipplet = (event: PointerEvent) => {
-  const elab = (event.target as Element).closest('.elab')
-  elab && ripplet.clear(elab)
-}
-addEventListener('pointerup', clearRipplet)
-addEventListener('pointerout', clearRipplet)
-addEventListener('pointercancel', clearRipplet)
-addEventListener('pointerdown', event => {
-  const elab = (event.target as Element).closest('.elab')
-  elab &&
-    ripplet(
-      { currentTarget: elab, clientX: event.clientX, clientY: event.clientY },
-      { appendTo: 'parent', clearing: false, color: 'var(--elab-color)' },
-    )
+  onOpen: ({ bar, popup }) => popup.style.setProperty('--elab-color', getComputedStyle(bar).getPropertyValue('--elab-color')),
 })

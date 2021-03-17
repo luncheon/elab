@@ -21,12 +21,13 @@
       <a href="?">Simple</a> or <a href="?material">Material</a>.
     </p>
   </header>
-  <main style="--elab-color: rgb(220, 0, 78)">
+  <main>
     <div
       class="elab"
       tabindex="0"
       onchange="console.log('change', arguments[0].detail.values)"
       onclose="console.log('close', arguments[0].detail.values)"
+      style="--elab-color: rgb(220, 0, 78)"
     >
       <ul>
         <li data-selected-all>All</li>

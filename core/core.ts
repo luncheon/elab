@@ -1,6 +1,7 @@
 export interface ElabOptions {
   readonly popupTemplate: string
   readonly popupItemTemplate: string
+  readonly onOpen?: (popup: ElabPopup) => void
 }
 
 interface ElabItem {
@@ -30,6 +31,7 @@ const collectValues = (items: ElabItem[]) =>
 export const elab = (options: ElabOptions) => {
   let activePopup: ElabPopup | undefined
 
+  const CLASS_BAR_OPEN = 'elab-open'
   const CLASS_POPUP_DROPUP = 'elab-popup-dropup'
   const CLASS_POPUP_DROPDOWN = 'elab-popup-dropdown'
 
@@ -62,14 +64,14 @@ export const elab = (options: ElabOptions) => {
 
   const layoutPopup = (popup: HTMLElement, bar: HTMLElement) => {
     const barClientRect = bar.getBoundingClientRect()
-    popup.style.left = bar.offsetLeft + 'px'
-    popup.style.width = bar.offsetWidth + 'px'
+    popup.style.left = barClientRect.left + 'px'
+    popup.style.width = barClientRect.width + 'px'
     if (popup.classList.contains(CLASS_POPUP_DROPUP)) {
       popup.style.maxHeight = barClientRect.top - 8 + 'px'
-      popup.style.top = bar.offsetTop - popup.offsetHeight + 'px'
+      popup.style.top = barClientRect.top - popup.offsetHeight + 'px'
     } else {
       popup.style.maxHeight = window.innerHeight - barClientRect.bottom - 20 + 'px'
-      popup.style.top = bar.offsetTop + bar.offsetHeight + 'px'
+      popup.style.top = barClientRect.top + bar.offsetHeight + 'px'
     }
   }
 
@@ -79,6 +81,7 @@ export const elab = (options: ElabOptions) => {
         new CustomEvent('close', { bubbles: true, cancelable: true, detail: { values: collectValues(activePopup.items) } }),
       )
     ) {
+      activePopup.bar.classList.remove(CLASS_BAR_OPEN)
       activePopup.bar.focus()
       activePopup.popup.remove()
       activePopup = undefined
@@ -126,18 +129,17 @@ export const elab = (options: ElabOptions) => {
     const [items, itemSelectedAll] = createPopupItems(bar, slot.parentElement!)
     slot.remove()
     activePopup = { bar, popup, items, itemSelectedAll }
+    bar.classList.add(CLASS_BAR_OPEN)
+    popup.className = (popup.className + ' ' + (bar.getAttribute('data-popup-class') || '')).trim()
+    popup.style.cssText = bar.getAttribute('data-popup-style') || ''
 
-    bar.parentElement!.insertBefore(popup, bar)
+    document.body.appendChild(popup)
     popup.classList.add(
       barRect.top * 1.75 > window.innerHeight && barRect.bottom + popup.offsetHeight > window.innerHeight
         ? CLASS_POPUP_DROPUP
         : CLASS_POPUP_DROPDOWN,
     )
     layoutPopup(popup, bar)
-
-    // without this, on Mac with preference `Show scrollbars: always`, position of the dropdown becomes wrong when the scrollbar is displayed...
-    popup.style.left = barRect.left + 'px'
-    popup.style.width = barRect.width + 'px'
 
     const setSelected = (checkbox: HTMLElement, checked: boolean) => {
       if (checkbox === itemSelectedAll?.checkbox) {
@@ -190,9 +192,11 @@ export const elab = (options: ElabOptions) => {
       }
     })
     setTimeout(() => popup.getElementsByTagName('input')[0]?.focus())
+    options.onOpen?.(activePopup)
   }
 
   addEventListener('resize', () => activePopup && layoutPopup(activePopup.popup, activePopup.bar))
+  addEventListener('scroll', () => activePopup && layoutPopup(activePopup.popup, activePopup.bar))
 
   addEventListener('pointerdown', event => {
     const element = event.target as Element
