@@ -133,7 +133,7 @@ export const elab = (options: ElabOptions) => {
     popup.className = (popup.className + ' ' + (bar.getAttribute('data-popup-class') || '')).trim()
     popup.style.cssText = bar.getAttribute('data-popup-style') || ''
 
-    document.body.appendChild(popup)
+    bar.parentElement!.insertBefore(popup, bar)
     popup.classList.add(
       barRect.top * 1.75 > window.innerHeight && barRect.bottom + popup.offsetHeight > window.innerHeight
         ? CLASS_POPUP_DROPUP
