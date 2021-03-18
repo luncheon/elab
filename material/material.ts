@@ -1,4 +1,5 @@
 import { mdiCheckboxBlankOffOutline, mdiCheckboxBlankOutline, mdiCheckboxMarked, mdiMinusBox } from '@mdi/js'
+import 'ripplet.js/es/ripplet-declarative'
 import { elab } from '../core/core'
 import './material.scss'
 
