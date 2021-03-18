@@ -195,8 +195,9 @@ export const elab = (options: ElabOptions) => {
     options.onOpen?.(activePopup)
   }
 
-  addEventListener('resize', () => activePopup && layoutPopup(activePopup.popup, activePopup.bar))
-  addEventListener('scroll', () => activePopup && layoutPopup(activePopup.popup, activePopup.bar))
+  const onResizeOrScroll = () => activePopup && layoutPopup(activePopup.popup, activePopup.bar)
+  addEventListener('resize', onResizeOrScroll)
+  addEventListener('scroll', onResizeOrScroll, true) // scroll event does not bubble
 
   addEventListener('pointerdown', event => {
     const element = event.target as Element
