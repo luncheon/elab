@@ -5,10 +5,10 @@ import './material.scss'
 
 elab({
   popupTemplate: '<ul><slot></slot></ul>',
-  popupItemTemplate: `<li><label class=elab-label data-ripplet="append-to:parent;color:var(--elab-color);">
+  popupItemTemplate: `<li><label class=elab-label data-ripplet="color:var(--elab-color)">
 <div class=elab-label-background></div>
 <input class=elab-checkbox type=checkbox>
-<svg class=elab-checkbox-icon viewBox="0 0 24 24" data-ripplet="append-to:parent;opacity:.2;centered:true;">
+<svg class=elab-checkbox-icon viewBox="0 0 24 24" data-ripplet="opacity:.2;centered:true">
   <path class=elab-checkbox-icon-unchecked d="${mdiCheckboxBlankOutline}" />
   <path class=elab-checkbox-icon-disabled d="${mdiCheckboxBlankOffOutline}" />
   <path class=elab-checkbox-icon-checked d="${mdiCheckboxMarked}" />
