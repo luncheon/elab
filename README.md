@@ -44,16 +44,17 @@ import 'elab/simple/simple.js'  // or 'elab/material/material.js'
 <script src="elab/simple.js"></script>
 
 <!-- 2. Place an element having "elab" class and `tabindex` attribute.
-        <Option> Listen to "change" and "close" events using `addEventListener()` or `on-` attributes.
+        [Optional] Add "elab-wrap" class to apply word-wrap.
+        [Optional] Listen to "change" and "close" events using `addEventListener()` or `on-` attributes.
         `event.detail.values` is an array having selected values. -->
 <div
-  class="elab"
+  class="elab elab-wrap"
   tabindex="0"
   onchange="console.log(arguments[0].detail.values)"
   onclose="console.log(arguments[0].detail.values)"
 >
   <ul>
-    <!-- 3. <Option> Place an item having `data-selected-all` to indicate or toggle all items. -->
+    <!-- 3. [Optional] Place an item having `data-selected-all` to indicate or toggle all items. -->
     <li data-selected-all>All</li>
 
     <!-- 4. Place items having `data-value` with `data-selected` or `data-disabled` as appropriate. -->
@@ -65,11 +66,11 @@ import 'elab/simple/simple.js'  // or 'elab/material/material.js'
     <li data-value="honeycomb">Honeycomb</li>
     <li data-value="ice" data-selected>Ice</li>
 
-    <!-- 5. <Option> Place an item having `data-placeholder` at last to display the placeholder. -->
+    <!-- 5. [Optional] Place an item having `data-placeholder` at last to display the placeholder. -->
     <li data-placeholder>Select...</li>
   </ul>
 
-  <!-- 6. <Option> Place an icon to indicate this is a dropdown, such as "▾". -->
+  <!-- 6. [Optional] Place an icon to indicate this is a dropdown, such as "▾". -->
   <div style="padding: 0 0.5em;">▾</div>
 </div>
 ```
