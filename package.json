@@ -32,11 +32,11 @@
     "size": "echo simple.css && gzip-size simple/simple.css && echo simple.js && gzip-size simple/simple.js && echo material.css && gzip-size material/material.css && echo material.js && gzip-size material/material.js"
   },
   "devDependencies": {
-    "esbuild": "^0.11.23",
-    "esbuild-plugin-sass": "^0.5.0",
+    "esbuild": "^0.12.14",
+    "esbuild-plugin-sass": "0.5.0",
     "gzip-size-cli": "^5.0.0",
-    "prettier": "^2.3.0",
-    "typescript": "^4.2.4"
+    "prettier": "^2.3.2",
+    "typescript": "^4.3.5"
   },
   "dependencies": {
     "@mdi/js": "^5.9.55",
