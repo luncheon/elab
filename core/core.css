@@ -20,12 +20,18 @@
   margin: 0;
 }
 
+.elab:not(.elab-wrap) > ul {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .elab > ul > li {
   display: none;
 }
 
 .elab > ul > li[data-selected] {
-  display: flex;
   cursor: pointer;
 }
 

@@ -22,7 +22,7 @@
 
 .elab > ul > li[data-selected] ~ li[data-selected]::before {
   content: ', ';
-  white-space: pre-wrap;
+  white-space: pre;
 }
 
 .elab-label {
