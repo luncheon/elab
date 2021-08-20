@@ -44,15 +44,8 @@ import 'elab/simple/simple.js'  // or 'elab/material/material.js'
 <script src="elab/simple.js"></script>
 
 <!-- 2. Place an element having "elab" class and `tabindex` attribute.
-        [Optional] Add "elab-wrap" class to apply word-wrap.
-        [Optional] Listen to "change" and "close" events using `addEventListener()` or `on-` attributes.
-        `event.detail.values` is an array having selected values. -->
-<div
-  class="elab elab-wrap"
-  tabindex="0"
-  onchange="console.log(arguments[0].detail.values)"
-  onclose="console.log(arguments[0].detail.values)"
->
+        [Optional] Add "elab-wrap" class to apply word-wrap. -->
+<div class="elab elab-wrap" tabindex="0">
   <ul>
     <!-- 3. [Optional] Place an item having `data-selected-all` to indicate or toggle all items. -->
     <li data-selected-all>All</li>
@@ -73,6 +66,16 @@ import 'elab/simple/simple.js'  // or 'elab/material/material.js'
   <!-- 6. [Optional] Place an icon to indicate this is a dropdown, such as "▾". -->
   <div style="padding: 0 0.5em;">▾</div>
 </div>
+
+<!-- Listen to "change" and/or "close" events using `addEventListener()`.
+     `event.detail.values` is an array having selected values. -->
+<script>
+  {
+    const element = document.querySelector('.elab')
+    element.addEventListener('change', event => console.log('change', event.detail.values))
+    element.addEventListener('close', event => console.log('close', event.detail.values))
+  }
+</script>
 ```
 
 ## License
